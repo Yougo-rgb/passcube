@@ -3,6 +3,7 @@ import {
   cubeDeconnection,
   cubeGetCurrentFacelet,
   cubeResetDefaultState,
+  cubeGetCurrentBattery,
 } from "./cube";
 import {
   arduinoConnection,
@@ -37,27 +38,6 @@ cubeConnectBtn.addEventListener("click", async () => {
     if (statusTxt) {
       statusTxt.innerText = "Connection successful!";
     }
-
-    cubeConnectionInstance.events$.subscribe((event) => {
-      if (event.type == "FACELETS") {
-        console.log("FACELET event", event);
-        // console.log("Cube facelets state", event.facelets);
-        // console.log("Cube facelets serial", event.serial);
-        // console.log("Cube facelets state", event.state);
-        // console.log("Cube facelets timestamp", event.timestamp);
-        // console.log("Cube facelets type", event.type);
-      } else if (event.type == "MOVE") {
-        console.log("MOVE event", event);
-        // console.log("Cube move", event.move);
-        // console.log("Cube cubeTimestamp", event.cubeTimestamp);
-        // console.log("Cube direction", event.direction);
-        // console.log("Cube face", event.face);
-        // console.log("Cube loaltiemstamp", event.localTimestamp);
-        // console.log("Cube serial", event.serial);
-        // console.log("Cube timestapm", event.timestamp);
-        // console.log("Cube type", event.type);
-      }
-    });
 
     await cubeConnectionInstance.sendCubeCommand({ type: "REQUEST_FACELETS" });
   } catch (e) {
@@ -143,6 +123,9 @@ arduinoDeconnectBtn.addEventListener("click", async () => {
 });
 
 setNewPassBtn.addEventListener("click", async () => {
+  let currentFacelet = await cubeGetCurrentFacelet(cubeConnectionInstance);
+  console.log(currentFacelet);
+
   try {
     // TODO
     const password = "";
