@@ -6,13 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>passcube-web</title>
   </head>
+
   <body>
     <div id="app"></div>
 
-    <button id="connect_btn">Connect</button>
+    <button id="cube_connect_btn">cube_connect_btn</button>
+    <button id="cube_deconnect_btn">cube_deconnect_btn</button>
+    <button id="cube_reset_state_btn">cube_reset_state_btn</button>
+
+    <button id="arduino_connect_btn">arduino_connect_btn</button>
+    <button id="arduino_deconnect_btn">arduino_deconnect_btn</button>
+
+    <button id="set_new_pass_btn">set_new_pass_btn</button>
+    <button id="check_pass_btn">check_pass_btn</button>
 
     <div id="info">
-        <div id="status_txt">Connect your cube !</div>
+      <div id="status_txt">Connect your cube !</div>
     </div>
 
     <script type="module" src="/src/main.js"></script>
