@@ -3,6 +3,16 @@ const ETX = 0x03;
 const ARDUINO_ADDRESS = 0x01;
 const XOR_KEY = 0x67;
 
+const SET_KEY = 0x01;
+const VERIFY_CUBE = 0x02;
+const GET_STATUS = 0x03;
+
+const ACK = 0x06;
+const NAK = 0x15;
+
+const ACCESS_GRANTED = 0x10;
+const ACCESS_DENIED = 0x11;
+
 /**
  * Describes the structure of a communication frame.
  *
@@ -62,7 +72,7 @@ const frameStructure = {
  * @param {Uint8Array} body - The body bytes.
  * @returns {number} The calculated checksum.
  */
-function claculateChecksum(address, length, body) {
+function calculateChecksum(address, length, body) {
   let checksum = address ^ length;
 
   for (const byte of body) {
@@ -81,17 +91,24 @@ function claculateChecksum(address, length, body) {
  */
 function buildFrame(address = ARDUINO_ADDRESS, body) {
   const length = body.length;
-  const checksum = claculateChecksum(address, length, body);
+  const checksum = calculateChecksum(address, length, body);
 
   return new Uint8Array([STX, address, length, ...body, checksum, ETX]);
 }
 
 export {
   buildFrame,
-  claculateChecksum,
+  calculateChecksum,
   frameStructure,
   STX,
   ETX,
   ARDUINO_ADDRESS,
-  XOR_KEY
+  XOR_KEY,
+  SET_KEY,
+  VERIFY_CUBE,
+  GET_STATUS,
+  ACK,
+  NAK,
+  ACCESS_GRANTED,
+  ACCESS_DENIED,
 };

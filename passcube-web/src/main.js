@@ -10,7 +10,6 @@ import {
   arduinoDeconnection,
   sendToArduino,
 } from "./arduino";
-import { claculateChecksum, buildFrame, frameStructure } from "./protocol";
 import { checkPassword, setNewPassword, xorEncryption } from "./password";
 import { twistyPlayer, render3x3Cube } from "./player";
 
@@ -128,11 +127,10 @@ arduinoDeconnectBtn.addEventListener("click", async () => {
 
 setNewPassBtn.addEventListener("click", async () => {
   let currentFacelet = await cubeGetCurrentFacelet(cubeConnectionInstance);
-  console.log(currentFacelet);
 
   try {
     // TODO
-    const password = "";
+    const password = currentFacelet;
 
     await setNewPassword(password);
 

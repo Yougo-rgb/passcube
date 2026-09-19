@@ -73,7 +73,6 @@ function handleCubeEvent(event) {
         pendingFacelets = null;
       }
 
-      console.log("Facelets:", event.facelets);
       break;
 
     case "BATTERY":
