@@ -75,7 +75,11 @@ async function setNewPassword(facelets) {
 
   const body = new Uint8Array([SET_KEY, ...encryptedFaceletBytes]);
 
-  await sendToArduino(body);
+  const frame = buildFrame(ARDUINO_ADDRESS, body);
+
+  console.log(frame);
+
+  await sendToArduino(frame);
 }
 
 /**
@@ -93,7 +97,11 @@ async function checkPassword(facelets) {
 
   const body = new Uint8Array([VERIFY_CUBE, ...encryptedFaceletBytes]);
 
-  await sendToArduino(body);
+  const frame = buildFrame(ARDUINO_ADDRESS, body);
+
+  console.log(frame);
+
+  await sendToArduino(frame);
 }
 
 export { checkPassword, setNewPassword, xorEncryption };

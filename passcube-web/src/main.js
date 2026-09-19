@@ -126,13 +126,10 @@ arduinoDeconnectBtn.addEventListener("click", async () => {
 });
 
 setNewPassBtn.addEventListener("click", async () => {
-  let currentFacelet = await cubeGetCurrentFacelet(cubeConnectionInstance);
+  const currentFacelet = await cubeGetCurrentFacelet(cubeConnectionInstance);
 
   try {
-    // TODO
-    const password = currentFacelet;
-
-    await setNewPassword(password);
+    await setNewPassword(currentFacelet);
 
     if (statusTxt) {
       statusTxt.innerText = "New key set.";
@@ -143,8 +140,14 @@ setNewPassBtn.addEventListener("click", async () => {
 });
 
 checkPassBtn.addEventListener("click", async () => {
+  const currentFacelet = await cubeGetCurrentFacelet(cubeConnectionInstance);
+
   try {
-    await checkPassword();
+    await checkPassword(currentFacelet);
+
+    if (statusTxt) {
+      statusTxt.innerText = "Check key set.";
+    }
   } catch (e) {
     console.error("Password verification failed:", e);
   }
