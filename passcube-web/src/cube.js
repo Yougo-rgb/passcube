@@ -23,6 +23,16 @@ let pendingFacelets = null;
 let pendingBattery = null;
 
 /**
+ * Checks whether a connection with the cube exists.
+ *
+ * @param {Object|null} connection - The cube connection to check.
+ * @returns {boolean} True if the cube is connected, otherwise false.
+ */
+function isCubeConnected(connection) {
+  return connection !== null;
+}
+
+/**
  * Creates a connection with a GAN Smart Cube using the connectGanCube function from the gan-web-bluetooth library.
  *
  * @returns {Promise<Object>} The connection object.
@@ -175,4 +185,5 @@ export {
   cubeGetCurrentFacelet,
   cubeResetDefaultState,
   cubeGetCurrentBattery,
+  isCubeConnected,
 };

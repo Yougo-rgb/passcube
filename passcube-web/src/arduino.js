@@ -11,7 +11,7 @@ let writer = null;
  */
 async function arduinoConnection() {
   if (!("serial" in navigator)) {
-    throw new Error("Eb Serial API is not supported by this browser.");
+    throw new Error("Web Serial API is not supported by this browser.");
   }
 
   serialPort = await navigator.serial.requestPort();
@@ -23,6 +23,15 @@ async function arduinoConnection() {
   writer = serialPort.writable.getWriter();
 
   console.log("Arduini connected.");
+}
+
+/**
+ * Checks whether a connection with the Arduino exists.
+ *
+ * @returns {boolean} True if the Arduino is connected, otherwise false.
+ */
+function isArduinoConnected() {
+  return writer !== null;
 }
 
 /**
@@ -61,4 +70,9 @@ async function sendToArduino(frame) {
   console.log("Frame sent tp Arduino:", frame);
 }
 
-export { arduinoConnection, arduinoDeconnection, sendToArduino };
+export {
+  arduinoConnection,
+  arduinoDeconnection,
+  sendToArduino,
+  isArduinoConnected,
+};

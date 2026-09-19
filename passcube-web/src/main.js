@@ -4,11 +4,13 @@ import {
   cubeGetCurrentFacelet,
   cubeResetDefaultState,
   cubeGetCurrentBattery,
+  isCubeConnected,
 } from "./cube";
 import {
   arduinoConnection,
   arduinoDeconnection,
   sendToArduino,
+  isArduinoConnected,
 } from "./arduino";
 import { checkPassword, setNewPassword, xorEncryption } from "./password";
 import { twistyPlayer, render3x3Cube } from "./player";
@@ -28,17 +30,71 @@ const checkPassBtn = document.getElementById("check_pass_btn");
 
 let cubeConnectionInstance = null;
 
-cubeConnectBtn.addEventListener("click", async () => {
+/**
+ * Updates the visibility and enabled state of all interface elements.
+ *
+ * The cube must be connected before using cube-related actions.
+ *
+ * The Arduino must be connected before setting or checking a password.
+ *
+ * @returns {void}
+ */
+function updateUI() {
+  const cubeConnected = isCubeConnected(cubeConnectionInstance);
+  const arduinoConnected = isArduinoConnected();
+
+  // Cube connection buttons
+  cubeConnectBtn.hidden = cubeConnected;
+  cubeConnectBtn.disabled = cubeConnected;
+
+  cubeDeconnectBtn.hidden = !cubeConnected;
+  cubeDeconnectBtn.disabled = !cubeConnected;
+
+  // Cube controls
+  cubeResetStateBtn.hidden = !cubeConnected;
+  cubeResetStateBtn.disabled = !cubeConnected;
+
+  // Cube visualisation
+  cubePlayer.hidden = !cubeConnected;
+
+  // Arduino connection buttons
+  arduinoConnectBtn.hidden = arduinoConnected;
+  arduinoConnectBtn.disabled = arduinoConnected;
+
+  arduinoDeconnectBtn.hidden = !arduinoConnected;
+  arduinoDeconnectBtn.disabled = !arduinoConnected;
+
+  // Password controls require both devices to be connected
+  const devicesConnected = cubeConnected && arduinoConnected;
+
+  setNewPassBtn.hidden = !devicesConnected;
+  setNewPassBtn.disabled = !devicesConnected;
+
+  checkPassBtn.hidden = !devicesConnected;
+  checkPassBtn.disabled = !devicesConnected;
+}
+
+/**
+ * Displays a status message to the user.
+ *
+ * @param {string} message - The message to display.
+ * @returns {void}
+ */
+function setStatus(message) {
   if (statusTxt) {
-    statusTxt.innerText = "Connecting...";
+    statusTxt.innerText = message;
   }
+}
+
+updateUI();
+
+cubeConnectBtn.addEventListener("click", async () => {
+  setStatus("Connecting...");
 
   try {
     cubeConnectionInstance = await cubeConnection();
 
-    if (statusTxt) {
-      statusTxt.innerText = "Connection successful!";
-    }
+    setStatus("Connection successful!");
 
     render3x3Cube(cubePlayer, twistyPlayer);
 
@@ -73,6 +129,7 @@ cubeConnectBtn.addEventListener("click", async () => {
 
     console.error("Cube connection failed:", e);
   }
+  updateUI();
 });
 
 cubeDeconnectBtn.addEventListener("click", async () => {
@@ -81,48 +138,44 @@ cubeDeconnectBtn.addEventListener("click", async () => {
 
     cubeConnectionInstance = null;
 
-    if (statusTxt) {
-      statusTxt.innerText = "Cube disconnected.";
-    }
+    setStatus("Cube disconnected.");
   } catch (e) {
     console.error("Cube disconnection failed:", e);
   }
+  updateUI();
 });
 
 cubeResetStateBtn.addEventListener("click", async () => {
   try {
     await cubeResetDefaultState(cubeConnectionInstance);
 
-    if (statusTxt) {
-      statusTxt.innerText = "Cube state reset.";
-    }
+    setStatus("Cube state reset.");
   } catch (e) {
     console.error("Cube reset failed:", e);
   }
+  updateUI();
 });
 
 arduinoConnectBtn.addEventListener("click", async () => {
   try {
     await arduinoConnection();
 
-    if (statusTxt) {
-      statusTxt.innerText = "Arduino connected.";
-    }
+    setStatus("Arduino connected.");
   } catch (e) {
     console.error("Arduino connection failed:", e);
   }
+  updateUI();
 });
 
 arduinoDeconnectBtn.addEventListener("click", async () => {
   try {
     await arduinoDeconnection();
 
-    if (statusTxt) {
-      statusTxt.innerText = "Arduino disconnected.";
-    }
+    setStatus("Arduino disconnected.");
   } catch (e) {
     console.error("Arduino disconnection failed:", e);
   }
+  updateUI();
 });
 
 setNewPassBtn.addEventListener("click", async () => {
@@ -131,12 +184,11 @@ setNewPassBtn.addEventListener("click", async () => {
   try {
     await setNewPassword(currentFacelet);
 
-    if (statusTxt) {
-      statusTxt.innerText = "New key set.";
-    }
+    setStatus("New key set.");
   } catch (e) {
     console.error("Setting new key failed:", e);
   }
+  updateUI();
 });
 
 checkPassBtn.addEventListener("click", async () => {
@@ -145,10 +197,9 @@ checkPassBtn.addEventListener("click", async () => {
   try {
     await checkPassword(currentFacelet);
 
-    if (statusTxt) {
-      statusTxt.innerText = "Check key set.";
-    }
+    setStatus("Check key set.");
   } catch (e) {
     console.error("Password verification failed:", e);
   }
+  updateUI();
 });
