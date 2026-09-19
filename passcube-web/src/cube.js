@@ -1,4 +1,5 @@
 import { connectGanCube } from "gan-web-bluetooth";
+import { twistyPlayer } from "./player";
 
 /**
  * Stores the current state of the GAN Smart Cube.
@@ -87,7 +88,7 @@ function handleCubeEvent(event) {
       break;
 
     case "MOVE":
-      // console.log("Move:", event);
+      twistyPlayer.experimentalAddMove(event.move, { cancel: false });
       break;
 
     case "DISCONNECT":
@@ -105,7 +106,7 @@ function handleCubeEvent(event) {
  * @param {Object} connection - The cube connection to disconnect.
  * @returns {void}
  */
-async function cubeDeconnection(connection) {
+function cubeDeconnection(connection) {
   if (!checkCubeConnection(connection)) return;
 
   connection.disconnect();
@@ -113,7 +114,7 @@ async function cubeDeconnection(connection) {
 }
 
 /**
- * Resets the GAN Smart Cube to its default state.
+ * Resets the GAN Smart Cube and the twisty player to its default state.
  *
  * @param {Object} connection - The cube connection.
  * @returns {Promise<void>}
@@ -122,6 +123,11 @@ async function cubeResetDefaultState(connection) {
   if (!checkCubeConnection(connection)) return;
 
   await connection.sendCubeCommand({ type: "REQUEST_RESET" });
+
+  // Reset 3D cube visualisation
+  if (twistyPlayer) {
+    twistyPlayer.alg = "";
+  }
 }
 
 /**

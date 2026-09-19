@@ -12,8 +12,10 @@ import {
 } from "./arduino";
 import { claculateChecksum, buildFrame, frameStructure } from "./protocol";
 import { checkPassword, setNewPassword, xorEncryption } from "./password";
+import { twistyPlayer, render3x3Cube } from "./player";
 
 const statusTxt = document.getElementById("status_txt");
+const cubePlayer = document.getElementById("cube_player");
 
 const cubeConnectBtn = document.getElementById("cube_connect_btn");
 const cubeDeconnectBtn = document.getElementById("cube_deconnect_btn");
@@ -38,6 +40,8 @@ cubeConnectBtn.addEventListener("click", async () => {
     if (statusTxt) {
       statusTxt.innerText = "Connection successful!";
     }
+
+    render3x3Cube(cubePlayer, twistyPlayer);
 
     await cubeConnectionInstance.sendCubeCommand({ type: "REQUEST_FACELETS" });
   } catch (e) {
@@ -74,7 +78,7 @@ cubeConnectBtn.addEventListener("click", async () => {
 
 cubeDeconnectBtn.addEventListener("click", async () => {
   try {
-    await cubeDeconnection(cubeConnectionInstance);
+    cubeDeconnection(cubeConnectionInstance);
 
     cubeConnectionInstance = null;
 
