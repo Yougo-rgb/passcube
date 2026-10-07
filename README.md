@@ -11,7 +11,7 @@ The project is currently under development. The Arduino communication and securi
 ## Installation
 
 ### Requirements
-
+ 
 - Node.js
 - An Arduino Uno
 - A compatible GAN Smart Cube
