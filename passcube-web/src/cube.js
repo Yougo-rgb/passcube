@@ -38,9 +38,13 @@ function isCubeConnected(connection) {
  * @returns {Promise<Object>} The connection object.
  * @throws {Error} If the connection fails.
  */
+
+const MAC_ADRESS = "ab:12:34:01:42:fa"
 async function cubeConnection() {
   try {
-    const connection = await connectGanCube();
+    const connection = await connectGanCube(
+      async () => MAC_ADRESS
+    );
 
     connection.events$.subscribe(handleCubeEvent);
 
