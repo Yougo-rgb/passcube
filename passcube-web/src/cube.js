@@ -34,17 +34,21 @@ function isCubeConnected(connection) {
 
 /**
  * Creates a connection with a GAN Smart Cube using the connectGanCube function from the gan-web-bluetooth library.
+ * Use mac address provided in parameter, if empty tries to discover it.
  *
+ * @param {string} mac_address - The mac address of the cube.
  * @returns {Promise<Object>} The connection object.
  * @throws {Error} If the connection fails.
  */
-
-const MAC_ADRESS = "ab:12:34:01:42:fa"
-async function cubeConnection() {
+async function cubeConnection(mac_address) {
   try {
-    const connection = await connectGanCube(
-      async () => MAC_ADRESS
-    );
+    let connection;
+
+    if (mac_address != "") {
+      connection = await connectGanCube(async () => mac_address);
+    } else {
+      connection = await connectGanCube();
+    }
 
     connection.events$.subscribe(handleCubeEvent);
 

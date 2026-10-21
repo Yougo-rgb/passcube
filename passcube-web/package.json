@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "cubing": "^0.63.6",
+    "dotenv": "^18.0.8",
     "gan-web-bluetooth": "^3.0.2"
   }
 }
