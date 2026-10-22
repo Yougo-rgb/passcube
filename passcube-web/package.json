@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format --all": "prettier --write .."
   },
   "devDependencies": {
     "@types/w3c-web-serial": "^1.0.8",
@@ -15,6 +17,7 @@
   "dependencies": {
     "cubing": "^0.63.6",
     "dotenv": "^18.0.8",
-    "gan-web-bluetooth": "^3.0.2"
+    "gan-web-bluetooth": "^3.0.2",
+    "prettier": "^3.9.10"
   }
 }
