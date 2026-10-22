@@ -7,8 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write .",
-    "format --all": "prettier --write .."
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@types/w3c-web-serial": "^1.0.8",

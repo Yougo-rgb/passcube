@@ -42,7 +42,6 @@ enum State
 
 State state = WAIT_STX;
 
-
 // ============================================================
 // Setup
 // ============================================================
@@ -52,7 +51,6 @@ void setup()
   Serial.begin(9600);
   HM10.begin(9600);
 }
-
 
 // ============================================================
 // Loop
@@ -66,7 +64,6 @@ void loop()
   }
 }
 
-
 // ============================================================
 // Frame parser
 // ============================================================
@@ -75,59 +72,58 @@ void readByte(uint8_t byte)
 {
   switch (state)
   {
-    case WAIT_STX:
-      if (byte == STX)
-        state = READ_ADDRESS;
-      break;
+  case WAIT_STX:
+    if (byte == STX)
+      state = READ_ADDRESS;
+    break;
 
-    case READ_ADDRESS:
-      address = byte;
-      state = READ_LENGTH;
-      break;
+  case READ_ADDRESS:
+    address = byte;
+    state = READ_LENGTH;
+    break;
 
-    case READ_LENGTH:
-      length = byte;
-      bodyIndex = 0;
+  case READ_LENGTH:
+    length = byte;
+    bodyIndex = 0;
 
-      if (length > sizeof(body))
-      {
-        sendResponse(NAK);
-        resetParser();
-      }
-      else if (length == 0)
-      {
-        state = READ_CHECKSUM;
-      }
-      else
-      {
-        state = READ_BODY;
-      }
-      break;
-
-    case READ_BODY:
-      body[bodyIndex++] = byte;
-
-      if (bodyIndex >= length)
-        state = READ_CHECKSUM;
-
-      break;
-
-    case READ_CHECKSUM:
-      checksum = byte;
-      state = READ_ETX;
-      break;
-
-    case READ_ETX:
-      if (byte == ETX)
-        processFrame();
-      else
-        sendResponse(NAK);
-
+    if (length > sizeof(body))
+    {
+      sendResponse(NAK);
       resetParser();
-      break;
+    }
+    else if (length == 0)
+    {
+      state = READ_CHECKSUM;
+    }
+    else
+    {
+      state = READ_BODY;
+    }
+    break;
+
+  case READ_BODY:
+    body[bodyIndex++] = byte;
+
+    if (bodyIndex >= length)
+      state = READ_CHECKSUM;
+
+    break;
+
+  case READ_CHECKSUM:
+    checksum = byte;
+    state = READ_ETX;
+    break;
+
+  case READ_ETX:
+    if (byte == ETX)
+      processFrame();
+    else
+      sendResponse(NAK);
+
+    resetParser();
+    break;
   }
 }
-
 
 // ============================================================
 // Process frame
@@ -160,24 +156,23 @@ void processFrame()
 
   switch (body[0])
   {
-    case SET_KEY:
-      setKey();
-      break;
+  case SET_KEY:
+    setKey();
+    break;
 
-    case VERIFY_CUBE:
-      verifyCube();
-      break;
+  case VERIFY_CUBE:
+    verifyCube();
+    break;
 
-    case GET_STATUS:
-      getStatus();
-      break;
+  case GET_STATUS:
+    getStatus();
+    break;
 
-    default:
-      sendResponse(NAK);
-      break;
+  default:
+    sendResponse(NAK);
+    break;
   }
 }
-
 
 // ============================================================
 // SET_KEY
@@ -198,7 +193,6 @@ void setKey()
 
   sendResponse(ACK);
 }
-
 
 // ============================================================
 // VERIFY_CUBE
@@ -226,7 +220,6 @@ void verifyCube()
   sendResponse(ACCESS_GRANTED);
 }
 
-
 // ============================================================
 // GET_STATUS
 // ============================================================
@@ -236,7 +229,6 @@ void getStatus()
   sendResponse(hasKey ? ACK : NAK);
 }
 
-
 // ============================================================
 // Send response frame
 // ============================================================
@@ -245,7 +237,7 @@ void sendResponse(uint8_t response)
 {
   uint8_t responseLength = 1;
   uint8_t checksum =
-    ARDUINO_ADDRESS ^ responseLength ^ response;
+      ARDUINO_ADDRESS ^ responseLength ^ response;
 
   HM10.write(STX);
   HM10.write(ARDUINO_ADDRESS);
@@ -254,7 +246,6 @@ void sendResponse(uint8_t response)
   HM10.write(checksum);
   HM10.write(ETX);
 }
-
 
 // ============================================================
 // Reset parser

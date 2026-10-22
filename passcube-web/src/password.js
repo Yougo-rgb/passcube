@@ -31,18 +31,10 @@ function faceletsToBytes(facelets) {
     B: 0x05,
   };
 
-  const bytes =
-    new Uint8Array(
-      facelets.length,
-    );
+  const bytes = new Uint8Array(facelets.length);
 
-  for (
-    let i = 0;
-    i < facelets.length;
-    i++
-  ) {
-    bytes[i] =
-      mapping[facelets[i]];
+  for (let i = 0; i < facelets.length; i++) {
+    bytes[i] = mapping[facelets[i]];
   }
 
   return bytes;
@@ -55,18 +47,10 @@ function faceletsToBytes(facelets) {
  * @returns {Uint8Array}
  */
 function xorEncryption(data) {
-  const result =
-    new Uint8Array(
-      data.length,
-    );
+  const result = new Uint8Array(data.length);
 
-  for (
-    let i = 0;
-    i < data.length;
-    i++
-  ) {
-    result[i] =
-      data[i] ^ XOR_KEY;
+  for (let i = 0; i < data.length; i++) {
+    result[i] = data[i] ^ XOR_KEY;
   }
 
   return result;
@@ -79,39 +63,18 @@ function xorEncryption(data) {
  * @param {string} facelets
  * @returns {Promise<string>}
  */
-async function setNewPassword(
-  facelets,
-) {
-  const faceletBytes =
-    faceletsToBytes(
-      facelets,
-    );
+async function setNewPassword(facelets) {
+  const faceletBytes = faceletsToBytes(facelets);
 
-  const encryptedFaceletBytes =
-    xorEncryption(
-      faceletBytes,
-    );
+  const encryptedFaceletBytes = xorEncryption(faceletBytes);
 
-  const body =
-    new Uint8Array([
-      SET_KEY,
-      ...encryptedFaceletBytes,
-    ]);
+  const body = new Uint8Array([SET_KEY, ...encryptedFaceletBytes]);
 
-  const frame =
-    buildFrame(
-      ARDUINO_ADDRESS,
-      body,
-    );
+  const frame = buildFrame(ARDUINO_ADDRESS, body);
 
-  console.log(
-    "[Password] Setting new password:",
-    frame,
-  );
+  console.log("[Password] Setting new password:", frame);
 
-  return await sendToArduino(
-    frame,
-  );
+  return await sendToArduino(frame);
 }
 
 /**
@@ -121,43 +84,18 @@ async function setNewPassword(
  * @param {string} facelets
  * @returns {Promise<string>}
  */
-async function checkPassword(
-  facelets,
-) {
-  const faceletBytes =
-    faceletsToBytes(
-      facelets,
-    );
+async function checkPassword(facelets) {
+  const faceletBytes = faceletsToBytes(facelets);
 
-  const encryptedFaceletBytes =
-    xorEncryption(
-      faceletBytes,
-    );
+  const encryptedFaceletBytes = xorEncryption(faceletBytes);
 
-  const body =
-    new Uint8Array([
-      VERIFY_CUBE,
-      ...encryptedFaceletBytes,
-    ]);
+  const body = new Uint8Array([VERIFY_CUBE, ...encryptedFaceletBytes]);
 
-  const frame =
-    buildFrame(
-      ARDUINO_ADDRESS,
-      body,
-    );
+  const frame = buildFrame(ARDUINO_ADDRESS, body);
 
-  console.log(
-    "[Password] Checking password:",
-    frame,
-  );
+  console.log("[Password] Checking password:", frame);
 
-  return await sendToArduino(
-    frame,
-  );
+  return await sendToArduino(frame);
 }
 
-export {
-  checkPassword,
-  setNewPassword,
-  xorEncryption,
-};
+export { checkPassword, setNewPassword, xorEncryption };

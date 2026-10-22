@@ -1,8 +1,6 @@
-const SERVICE_UUID =
-  "0000ffe0-0000-1000-8000-00805f9b34fb";
+const SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb";
 
-const CHARACTERISTIC_UUID =
-  "0000ffe1-0000-1000-8000-00805f9b34fb";
+const CHARACTERISTIC_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb";
 
 const STX = 0x02;
 const ETX = 0x03;
@@ -23,69 +21,43 @@ let bluetoothCharacteristic = null;
  */
 async function arduinoConnection() {
   if (!("bluetooth" in navigator)) {
-    throw new Error(
-      "Web Bluetooth API is not supported by this browser.",
-    );
+    throw new Error("Web Bluetooth API is not supported by this browser.");
   }
 
-  console.log(
-    "[Bluetooth] Recherche du HM-10...",
-  );
+  console.log("[Bluetooth] Recherche du HM-10...");
 
-  bluetoothDevice =
-    await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: [SERVICE_UUID],
-    });
+  bluetoothDevice = await navigator.bluetooth.requestDevice({
+    acceptAllDevices: true,
+    optionalServices: [SERVICE_UUID],
+  });
 
-  console.log(
-    "[Bluetooth] Périphérique sélectionné:",
-    bluetoothDevice.name,
-  );
+  console.log("[Bluetooth] Périphérique sélectionné:", bluetoothDevice.name);
 
   bluetoothDevice.addEventListener(
     "gattserverdisconnected",
     handleBluetoothDisconnected,
   );
 
-  console.log(
-    "[Bluetooth] Connexion GATT...",
-  );
+  console.log("[Bluetooth] Connexion GATT...");
 
-  const server =
-    await bluetoothDevice.gatt.connect();
+  const server = await bluetoothDevice.gatt.connect();
 
-  console.log(
-    "[Bluetooth] Bluetooth connecté.",
-  );
+  console.log("[Bluetooth] Bluetooth connecté.");
 
-  const service =
-    await server.getPrimaryService(
-      SERVICE_UUID,
-    );
+  const service = await server.getPrimaryService(SERVICE_UUID);
 
-  console.log(
-    "[Bluetooth] Service HM-10 récupéré.",
-  );
+  console.log("[Bluetooth] Service HM-10 récupéré.");
 
   bluetoothCharacteristic =
-    await service.getCharacteristic(
-      CHARACTERISTIC_UUID,
-    );
+    await service.getCharacteristic(CHARACTERISTIC_UUID);
 
-  console.log(
-    "[Bluetooth] Caractéristique HM-10 récupérée.",
-  );
+  console.log("[Bluetooth] Caractéristique HM-10 récupérée.");
 
   await bluetoothCharacteristic.startNotifications();
 
-  console.log(
-    "[Bluetooth] Notifications activées.",
-  );
+  console.log("[Bluetooth] Notifications activées.");
 
-  console.log(
-    "[Bluetooth] HM-10 connecté et prêt.",
-  );
+  console.log("[Bluetooth] HM-10 connecté et prêt.");
 }
 
 /**
@@ -122,149 +94,98 @@ function parseArduinoResponse(response) {
  * @returns {Promise<string>}
  */
 function sendToArduino(frame) {
-  return new Promise(
-    async (resolve, reject) => {
-      if (!isArduinoConnected()) {
-        reject(
-          new Error(
-            "Arduino/HM-10 is not connected.",
-          ),
-        );
+  return new Promise(async (resolve, reject) => {
+    if (!isArduinoConnected()) {
+      reject(new Error("Arduino/HM-10 is not connected."));
+      return;
+    }
+
+    if (!(frame instanceof Uint8Array)) {
+      reject(new TypeError("Frame must be a Uint8Array."));
+      return;
+    }
+
+    console.log("[Arduino TX] Frame envoyée:", frame);
+
+    console.log(
+      "[Arduino TX] HEX:",
+      Array.from(frame)
+        .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
+        .join(" "),
+    );
+
+    console.log("[Arduino TX] Length:", frame.length, "bytes");
+
+    /**
+     * Handles the response received
+     * from the Arduino.
+     */
+    function responseListener(event) {
+      const value = event.target.value;
+
+      if (!value) {
         return;
       }
 
-      if (!(frame instanceof Uint8Array)) {
-        reject(
-          new TypeError(
-            "Frame must be a Uint8Array.",
-          ),
-        );
-        return;
-      }
-
-      console.log(
-        "[Arduino TX] Frame envoyée:",
-        frame,
+      const bytes = new Uint8Array(
+        value.buffer,
+        value.byteOffset,
+        value.byteLength,
       );
 
+      console.log("[Arduino RX] Frame reçue:", bytes);
+
       console.log(
-        "[Arduino TX] HEX:",
-        Array.from(frame)
-          .map((byte) =>
-            byte
-              .toString(16)
-              .padStart(2, "0")
-              .toUpperCase(),
-          )
+        "[Arduino RX] HEX:",
+        Array.from(bytes)
+          .map((byte) => byte.toString(16).padStart(2, "0").toUpperCase())
           .join(" "),
       );
 
-      console.log(
-        "[Arduino TX] Length:",
-        frame.length,
-        "bytes",
-      );
+      // Expected:
+      // STX | ADDRESS | LENGTH | RESPONSE | CHECKSUM | ETX
+      if (bytes.length !== 6 || bytes[0] !== STX || bytes[5] !== ETX) {
+        console.log("[Arduino RX] Trame invalide.");
 
-      /**
-       * Handles the response received
-       * from the Arduino.
-       */
-      function responseListener(event) {
-        const value =
-          event.target.value;
-
-        if (!value) {
-          return;
-        }
-
-        const bytes =
-          new Uint8Array(
-            value.buffer,
-            value.byteOffset,
-            value.byteLength,
-          );
-
-        console.log(
-          "[Arduino RX] Frame reçue:",
-          bytes,
-        );
-
-        console.log(
-          "[Arduino RX] HEX:",
-          Array.from(bytes)
-            .map((byte) =>
-              byte
-                .toString(16)
-                .padStart(2, "0")
-                .toUpperCase(),
-            )
-            .join(" "),
-        );
-
-        // Expected:
-        // STX | ADDRESS | LENGTH | RESPONSE | CHECKSUM | ETX
-        if (
-          bytes.length !== 6 ||
-          bytes[0] !== STX ||
-          bytes[5] !== ETX
-        ) {
-          console.log(
-            "[Arduino RX] Trame invalide.",
-          );
-
-          return;
-        }
-
-        const response =
-          parseArduinoResponse(
-            bytes[3],
-          );
-
-        if (response === null) {
-          console.log(
-            "[Arduino RX] Réponse inconnue:",
-            bytes[3],
-          );
-
-          return;
-        }
-
-        console.log(
-          "[Arduino RX]",
-          response,
-        );
-
-        bluetoothCharacteristic.removeEventListener(
-          "characteristicvaluechanged",
-          responseListener,
-        );
-
-        resolve(response);
+        return;
       }
 
-      bluetoothCharacteristic.addEventListener(
+      const response = parseArduinoResponse(bytes[3]);
+
+      if (response === null) {
+        console.log("[Arduino RX] Réponse inconnue:", bytes[3]);
+
+        return;
+      }
+
+      console.log("[Arduino RX]", response);
+
+      bluetoothCharacteristic.removeEventListener(
         "characteristicvaluechanged",
         responseListener,
       );
 
-      try {
-        await bluetoothCharacteristic.writeValue(
-          frame,
-        );
+      resolve(response);
+    }
 
-        console.log(
-          "[Arduino TX] Envoi terminé.",
-        );
-      } catch (error) {
-        bluetoothCharacteristic.removeEventListener(
-          "characteristicvaluechanged",
-          responseListener,
-        );
+    bluetoothCharacteristic.addEventListener(
+      "characteristicvaluechanged",
+      responseListener,
+    );
 
-        reject(error);
-      }
-    },
-  );
+    try {
+      await bluetoothCharacteristic.writeValue(frame);
+
+      console.log("[Arduino TX] Envoi terminé.");
+    } catch (error) {
+      bluetoothCharacteristic.removeEventListener(
+        "characteristicvaluechanged",
+        responseListener,
+      );
+
+      reject(error);
+    }
+  });
 }
 
 /**
@@ -273,9 +194,7 @@ function sendToArduino(frame) {
  * @returns {void}
  */
 function handleBluetoothDisconnected() {
-  console.log(
-    "[Bluetooth] HM-10 déconnecté.",
-  );
+  console.log("[Bluetooth] HM-10 déconnecté.");
 
   bluetoothCharacteristic = null;
 }
@@ -306,25 +225,18 @@ async function arduinoDeconnection() {
       bluetoothDevice.gatt &&
       bluetoothDevice.gatt.connected
     ) {
-      console.log(
-        "[Bluetooth] Déconnexion du HM-10...",
-      );
+      console.log("[Bluetooth] Déconnexion du HM-10...");
 
       bluetoothDevice.gatt.disconnect();
     }
   } catch (error) {
-    console.error(
-      "[Bluetooth] Erreur lors de la déconnexion:",
-      error,
-    );
+    console.error("[Bluetooth] Erreur lors de la déconnexion:", error);
   }
 
   bluetoothCharacteristic = null;
   bluetoothDevice = null;
 
-  console.log(
-    "[Bluetooth] Arduino déconnecté.",
-  );
+  console.log("[Bluetooth] Arduino déconnecté.");
 }
 
 export {
